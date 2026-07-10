@@ -211,7 +211,7 @@
   color: var(--black);
 }
 
-/* --- Actions (Pagar ahora + WhatsApp) --- */
+/* --- Actions (Pagar ahora) --- */
 .product-card__actions {
   display: flex;
   gap: 8px;

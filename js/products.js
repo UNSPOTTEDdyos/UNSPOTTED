@@ -3,7 +3,6 @@
    Usado por drops.html (grid completo) e index.html (preview)
    ============================================= */
 
-const WHATSAPP_NUMBER = '526563498795';
 const SIZE_ORDER = ['S', 'M', 'L', 'XL'];
 
 function escapeHtml(str) {
@@ -14,12 +13,6 @@ function escapeHtml(str) {
 
 function formatPrice(price) {
   return `$${Number(price).toLocaleString('es-MX')} MXN`;
-}
-
-function buildWhatsappLink(productName, size) {
-  const sizeText = size ? size : '___';
-  const message = `Hola, quiero apartar ${productName} talla ${sizeText} . Vi el drop en unspotted.com`;
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
 async function fetchActiveProducts(limit) {
@@ -47,7 +40,6 @@ function renderProductCard(product) {
   article.className = 'product-card fade-in';
 
   const sizes = product.sizes || {};
-  const whatsappHref = buildWhatsappLink(product.name, null);
 
   const sizeChipsHtml = SIZE_ORDER.map((size) => {
     const stock = Number(sizes[size] || 0);
@@ -69,13 +61,11 @@ function renderProductCard(product) {
       <div class="size-chips">${sizeChipsHtml}</div>
       <div class="product-card__actions">
         <button type="button" class="product-card__btn product-card__btn--pay" data-product-id="${product.id}" disabled>Pagar ahora →</button>
-        <a class="product-card__btn" href="${whatsappHref}" target="_blank" rel="noopener">Pedir por WhatsApp →</a>
       </div>
       <p class="product-card__pay-msg"></p>
     </div>
   `;
 
-  const whatsappBtn = article.querySelector('.product-card__btn:not(.product-card__btn--pay)');
   const payBtn = article.querySelector('.product-card__btn--pay');
   const chips = article.querySelectorAll('.size-chip:not(.size-chip--soldout)');
 
@@ -83,7 +73,6 @@ function renderProductCard(product) {
     chip.addEventListener('click', () => {
       chips.forEach((c) => c.classList.remove('is-selected'));
       chip.classList.add('is-selected');
-      whatsappBtn.href = buildWhatsappLink(product.name, chip.dataset.size);
       payBtn.disabled = false;
       payBtn.dataset.size = chip.dataset.size;
     });
