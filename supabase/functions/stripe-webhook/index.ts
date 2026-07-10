@@ -32,21 +32,24 @@ Deno.serve(async (req) => {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
-    const orderId = session.metadata?.order_id;
+    const meta = session.metadata;
 
-    if (!orderId) {
-      console.error('checkout.session.completed sin order_id en metadata');
+    if (!meta?.product_id || !meta?.size || !meta?.price) {
+      console.error('checkout.session.completed sin metadata de producto', session.id);
       return new Response('ok', { status: 200 });
     }
 
-    const { data: order } = await supabase
+    // Stripe puede reenviar el mismo evento más de una vez (reintentos). Si ya
+    // existe un pedido con este stripe_session_id, ya lo procesamos antes —
+    // sin este chequeo se duplicaría el pedido y se restaría stock dos veces.
+    const { data: existing } = await supabase
       .from('orders')
-      .select('*')
-      .eq('id', orderId)
-      .single();
+      .select('id')
+      .eq('stripe_session_id', session.id)
+      .maybeSingle();
 
-    if (!order) {
-      console.error('No se encontró la orden', orderId);
+    if (existing) {
+      console.log('Evento ya procesado, ignorando duplicado', session.id);
       return new Response('ok', { status: 200 });
     }
 
@@ -62,39 +65,43 @@ Deno.serve(async (req) => {
       : null;
 
     console.log('checkout.session.completed', {
-      orderId,
-      hasShippingDetails: !!session.shipping_details,
+      sessionId: session.id,
+      productId: meta.product_id,
+      size: meta.size,
       hasShippingAddress: !!session.shipping_details?.address,
       hasCustomerAddress: !!session.customer_details?.address,
       resolvedShippingAddress: shippingAddress,
     });
 
-    const { error: updateError } = await supabase
-      .from('orders')
-      .update({
-        status: 'paid',
-        customer_name: shipping?.name ?? session.customer_details?.name ?? null,
-        customer_phone: session.customer_details?.phone ?? null,
-        shipping_address: shippingAddress,
-      })
-      .eq('id', orderId);
+    const { error: insertError } = await supabase.from('orders').insert({
+      product_id: meta.product_id,
+      product_name: meta.product_name,
+      size: meta.size,
+      price: Number(meta.price),
+      status: 'paid',
+      stripe_session_id: session.id,
+      customer_name: shipping?.name ?? session.customer_details?.name ?? null,
+      customer_phone: session.customer_details?.phone ?? null,
+      shipping_address: shippingAddress,
+    });
 
-    if (updateError) {
-      console.error('Error al actualizar la orden', orderId, updateError);
+    if (insertError) {
+      console.error('Error al crear el pedido', session.id, insertError);
+      return new Response('error', { status: 500 });
     }
 
     const { data: product } = await supabase
       .from('products')
       .select('sizes')
-      .eq('id', order.product_id)
+      .eq('id', meta.product_id)
       .single();
 
     if (product) {
       const sizes = { ...product.sizes };
-      const current = Number(sizes[order.size] ?? 0);
-      sizes[order.size] = Math.max(0, current - 1);
+      const current = Number(sizes[meta.size] ?? 0);
+      sizes[meta.size] = Math.max(0, current - 1);
 
-      await supabase.from('products').update({ sizes }).eq('id', order.product_id);
+      await supabase.from('products').update({ sizes }).eq('id', meta.product_id);
     }
   }
 

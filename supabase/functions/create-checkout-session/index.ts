@@ -54,23 +54,11 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'Esa talla está agotada.' }, 400);
     }
 
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        product_id: product.id,
-        product_name: product.name,
-        size,
-        price: product.price,
-        status: 'pending',
-      })
-      .select()
-      .single();
-
-    if (orderError || !order) {
-      console.error(orderError);
-      return jsonResponse({ error: 'No se pudo crear el pedido.' }, 500);
-    }
-
+    // El pedido NO se crea aquí. Si se creara ahora, cualquiera que abra el
+    // checkout y no pague dejaría una fila "pending" basura en la tabla.
+    // En vez de eso, mandamos los datos ya verificados (precio real, nombre
+    // real) como metadata de la sesión, y el webhook crea el pedido —
+    // directo como "paid" — solo si el pago se completa de verdad.
     const siteUrl = Deno.env.get('SITE_URL') ?? 'http://localhost:8080';
 
     const session = await stripe.checkout.sessions.create({
@@ -89,13 +77,13 @@ Deno.serve(async (req) => {
       phone_number_collection: { enabled: true },
       success_url: `${siteUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/checkout-cancel.html`,
-      metadata: { order_id: order.id },
+      metadata: {
+        product_id: product.id,
+        product_name: product.name,
+        size,
+        price: String(product.price),
+      },
     });
-
-    await supabase
-      .from('orders')
-      .update({ stripe_session_id: session.id })
-      .eq('id', order.id);
 
     return jsonResponse({ url: session.url });
   } catch (err) {
