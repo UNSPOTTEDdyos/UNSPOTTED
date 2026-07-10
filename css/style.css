@@ -16,7 +16,7 @@
   --font-display: 'Bebas Neue', sans-serif;
   --font-body:    'Inter', sans-serif;
 
-  --nav-height: 64px;
+  --nav-height: 96px;
   --max-content: 1200px;
   --transition: 0.3s ease;
 }
@@ -72,7 +72,7 @@ a {
 }
 
 .navbar__logo img {
-  height: 32px;
+  height: 64px;
   width: auto;
   filter: invert(1);
 }
