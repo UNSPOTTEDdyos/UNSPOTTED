@@ -1,0 +1,242 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UNSPOTTED — Lore</title>
+  <meta name="description" content="Born from vitiligo. Define your own spots. El mundo detrás de UNSPOTTED." />
+  <meta property="og:title" content="UNSPOTTED — Lore" />
+  <meta property="og:description" content="Born from vitiligo. Define your own spots." />
+  <meta property="og:image" content="assets/UNSPOTTEDg.png" />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/png" href="assets/UNSPOTTEDg.png" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .lore-hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 500px;
+      overflow: hidden;
+      background-color: var(--black);
+    }
+
+    .lore-hero video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .lore-content {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 80px 32px 120px;
+    }
+
+    .lore-img {
+      width: 100%;
+      background-color: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lore-img--wide {
+      aspect-ratio: 16 / 9;
+      max-width: 100%;
+      margin: 0 auto 80px;
+    }
+
+    .lore-img--square {
+      aspect-ratio: 1 / 1;
+      margin: 80px auto;
+    }
+
+    .lore-img span {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gray-mid);
+    }
+
+    .lore-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .lore-block {
+      margin-bottom: 80px;
+    }
+
+    .lore-block__title {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 8vw, 72px);
+      color: var(--white);
+      line-height: 1;
+      letter-spacing: 0.02em;
+      margin-bottom: 32px;
+    }
+
+    .lore-block__body {
+      font-family: var(--font-body);
+      font-size: 17px;
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1.8;
+    }
+
+    .lore-block__body--muted {
+      color: #CCCCCC;
+      font-size: 15px;
+    }
+
+    .lore-block--center {
+      text-align: center;
+      margin-top: 80px;
+      margin-bottom: 0;
+    }
+
+    .lore-block--center .lore-block__title {
+      font-size: clamp(48px, 10vw, 96px);
+    }
+
+    .lore-fullwidth {
+      max-width: 900px;
+      margin: 0 auto 80px;
+      padding: 0 32px;
+    }
+
+    @media (max-width: 600px) {
+      .lore-content {
+        padding: 60px 20px 80px;
+      }
+
+      .lore-fullwidth {
+        padding: 0 20px;
+      }
+
+      .lore-block {
+        margin-bottom: 60px;
+      }
+
+      .lore-img--wide,
+      .lore-img--square {
+        margin-bottom: 60px;
+      }
+
+      .lore-img--square {
+        margin-top: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar__logo">
+      <img src="assets/UNSPOTTEDg.png" alt="UNSPOTTED"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+      <span class="navbar__logo-text" style="display:none;">UNSPOTTED</span>
+    </a>
+    <ul class="navbar__links">
+      <li><a href="drops.html">Drops</a></li>
+      <li><a href="lore.html">Lore</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <button class="navbar__hamburger" aria-label="Menú">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE OVERLAY -->
+  <div class="nav-overlay">
+    <a href="drops.html">Drops</a>
+    <a href="lore.html">Lore</a>
+    <a href="contact.html">Contact</a>
+  </div>
+
+  <main class="lore-page">
+
+    <!-- BLOQUE 1 — Video a pantalla completa -->
+    <div class="lore-hero fade-in">
+      <video
+        src="assets/Espectacular.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+      ></video>
+    </div>
+
+    <div class="lore-content">
+
+      <!-- BLOQUE 2 — Texto principal -->
+      <div class="lore-block fade-in">
+        <h1 class="lore-block__title">BORN FROM<br>VITILIGO.</h1>
+        <p class="lore-block__body">
+          UNSPOTTED nació de una característica física que siempre estuve tentado a esconder. El vitiligo define los patrones en mi piel — patrones que no elegí, pero que terminaron definiéndome. Esta marca existe porque decidí que esos patrones eran diseño, no defecto.
+        </p>
+      </div>
+
+      <!-- BLOQUE 3 — Video cuadrado -->
+      <div class="lore-img lore-img--square fade-in">
+        <video
+          class="lore-video"
+          src="assets/seri.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+        ></video>
+      </div>
+
+      <!-- BLOQUE 4 — Texto secundario -->
+      <div class="lore-block fade-in">
+        <p class="lore-block__body lore-block__body--muted">
+          Cada pieza es serigrafiada a mano. Tiraje limitado. Los diseños vienen de los mismos patrones orgánicos que tiene el vitiligo — formas que no se repiten, que no siguen reglas, que simplemente son.
+        </p>
+      </div>
+
+      <!-- BLOQUE 5 — Quote final centrada -->
+      <div class="lore-block lore-block--center fade-in">
+        <h2 class="lore-block__title">DEFINE YOUR<br>OWN SPOTS.</h2>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span class="footer__copy">© UNSPOTTED</span>
+    <div class="footer__links">
+      <a href="https://instagram.com/unspotted.official" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <circle cx="12" cy="12" r="4"/>
+          <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+        </svg>
+        @unspotted.official
+      </a>
+      <span class="footer__sep">·</span>
+      <a href="https://wa.me/526563498795" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        WhatsApp
+      </a>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

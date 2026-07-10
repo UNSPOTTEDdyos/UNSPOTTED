@@ -1,0 +1,304 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UNSPOTTED — Contact</title>
+  <meta name="description" content="Encuentra a UNSPOTTED en Instagram, WhatsApp o email. Pide tu pieza del drop." />
+  <meta property="og:title" content="UNSPOTTED — Contact" />
+  <meta property="og:description" content="Find us. Instagram · WhatsApp · Email." />
+  <meta property="og:image" content="assets/UNSPOTTEDg.png" />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/png" href="assets/UNSPOTTEDg.png" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .contact-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .contact-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: calc(var(--nav-height) + 60px) 32px 80px;
+    }
+
+    .contact-inner {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .contact-title {
+      font-family: var(--font-display);
+      font-size: clamp(60px, 12vw, 110px);
+      color: var(--white);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      margin-bottom: 60px;
+    }
+
+    .contact-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .contact-link {
+      font-family: var(--font-body);
+      font-size: clamp(15px, 2.5vw, 20px);
+      font-weight: 400;
+      color: var(--white);
+      letter-spacing: 0.04em;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--gray-dark);
+      transition: opacity var(--transition);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .contact-link:first-child {
+      border-top: 1px solid var(--gray-dark);
+    }
+
+    .contact-link:hover .contact-link__label {
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .contact-link__prefix {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gray-text);
+      white-space: nowrap;
+      min-width: 100px;
+    }
+
+    .contact-link__label {
+      flex: 1;
+    }
+
+    .contact-link__arrow {
+      color: var(--gray-text);
+      font-size: 14px;
+    }
+
+    .contact-notify {
+      margin-top: 64px;
+      padding-top: 48px;
+      border-top: 1px solid var(--gray-dark);
+    }
+
+    .contact-notify__label {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gray-text);
+      margin-bottom: 20px;
+    }
+
+    .contact-notify__form {
+      display: flex;
+      gap: 0;
+    }
+
+    .contact-notify__input {
+      flex: 1;
+      background: transparent;
+      border: 1px solid var(--gray-mid);
+      border-right: none;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      padding: 14px 18px;
+      outline: none;
+      transition: border-color var(--transition);
+    }
+
+    .contact-notify__input::placeholder {
+      color: var(--gray-text);
+    }
+
+    .contact-notify__input:focus {
+      border-color: var(--white);
+    }
+
+    .contact-notify__btn {
+      background: transparent;
+      border: 1px solid var(--gray-mid);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 14px 22px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background var(--transition), color var(--transition), border-color var(--transition);
+    }
+
+    .contact-notify__btn:hover {
+      background: var(--white);
+      color: var(--black);
+      border-color: var(--white);
+    }
+
+    @media (max-width: 600px) {
+      .contact-main {
+        align-items: flex-start;
+        padding: calc(var(--nav-height) + 40px) 20px 60px;
+      }
+
+      .contact-title {
+        margin-bottom: 40px;
+      }
+
+      .contact-link {
+        padding: 18px 0;
+      }
+
+      .contact-link__prefix {
+        min-width: 80px;
+        font-size: 10px;
+      }
+
+      .contact-notify__form {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .contact-notify__input {
+        border-right: 1px solid var(--gray-mid);
+        border-bottom: none;
+      }
+
+      .contact-notify__input:focus {
+        border-color: var(--white);
+      }
+
+      .contact-notify__btn {
+        width: 100%;
+        border: 1px solid var(--gray-mid);
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar__logo">
+      <img src="assets/UNSPOTTEDg.png" alt="UNSPOTTED"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+      <span class="navbar__logo-text" style="display:none;">UNSPOTTED</span>
+    </a>
+    <ul class="navbar__links">
+      <li><a href="drops.html">Drops</a></li>
+      <li><a href="lore.html">Lore</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <button class="navbar__hamburger" aria-label="Menú">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE OVERLAY -->
+  <div class="nav-overlay">
+    <a href="drops.html">Drops</a>
+    <a href="lore.html">Lore</a>
+    <a href="contact.html">Contact</a>
+  </div>
+
+  <div class="contact-page">
+    <main class="contact-main">
+      <div class="contact-inner">
+
+        <h1 class="contact-title fade-in">FIND US.</h1>
+
+        <div class="contact-links">
+          <a
+            class="contact-link fade-in"
+            href="https://instagram.com/unspotted.official"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="contact-link__prefix">Instagram</span>
+            <span class="contact-link__label">@unspotted.official</span>
+            <span class="contact-link__arrow">→</span>
+          </a>
+
+          <a
+            class="contact-link fade-in delay-1"
+            href="https://wa.me/526563498795"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="contact-link__prefix">WhatsApp</span>
+            <span class="contact-link__label">+52 656 349 8795</span>
+            <span class="contact-link__arrow">→</span>
+          </a>
+
+          <a
+            class="contact-link fade-in delay-2"
+            href="mailto:hola@unspotted.mx"
+          >
+            <span class="contact-link__prefix">Email</span>
+            <span class="contact-link__label">hola@unspotted.mx</span>
+            <span class="contact-link__arrow">→</span>
+          </a>
+        </div>
+
+        <!-- Notify form (visual only) -->
+        <div class="contact-notify fade-in delay-3">
+          <p class="contact-notify__label">Avísame del próximo drop</p>
+          <div class="contact-notify__form">
+            <input
+              class="contact-notify__input"
+              type="email"
+              placeholder="tu correo para el próximo drop"
+              autocomplete="email"
+            />
+            <button class="contact-notify__btn" type="button">Avísame →</button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <span class="footer__copy">© UNSPOTTED</span>
+      <div class="footer__links">
+        <a href="https://instagram.com/unspotted.official" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+          </svg>
+          @unspotted.official
+        </a>
+        <span class="footer__sep">·</span>
+        <a href="https://wa.me/526563498795" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+          WhatsApp
+        </a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

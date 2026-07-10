@@ -1,0 +1,317 @@
+/* =============================================
+   UNSPOTTED — Drops / Catálogo Styles
+   ============================================= */
+
+/* --- Page Header --- */
+.drops-header {
+  padding: 120px 32px 60px;
+  max-width: var(--max-content);
+  margin: 0 auto;
+}
+
+.drops-header__title {
+  font-family: var(--font-display);
+  font-size: clamp(72px, 14vw, 140px);
+  color: var(--white);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+}
+
+.drops-header__subtitle {
+  margin-top: 16px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray-text);
+}
+
+/* --- Product Grid --- */
+.drops-grid {
+  padding: 40px 32px 100px;
+  max-width: var(--max-content);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* --- Product Card --- */
+.product-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.product-card__image-wrap {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  background-color: #111111;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.product-card__image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Front/back photo swap on hover */
+.product-card__img--front,
+.product-card__img--back {
+  position: absolute;
+  inset: 0;
+  transition: opacity var(--transition);
+}
+
+.product-card__img--back {
+  opacity: 0;
+}
+
+.product-card__image-wrap:hover .product-card__img--back {
+  opacity: 1;
+}
+
+/* Placeholder when no real image */
+.product-card__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-mid);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Hover overlay */
+.product-card__overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.product-card__image-wrap:hover .product-card__overlay {
+  opacity: 1;
+}
+
+.product-card__overlay-text {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 0.08em;
+  color: var(--white);
+}
+
+/* Card info */
+.product-card__info {
+  padding: 16px 0 0;
+}
+
+.product-card__name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  line-height: 1;
+}
+
+.product-card__price {
+  font-size: 14px;
+  color: var(--white);
+  margin-top: 6px;
+  letter-spacing: 0.02em;
+}
+
+.product-card__sizes {
+  font-size: 11px;
+  color: var(--gray-text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+/* --- Size Chips --- */
+.size-chips {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.size-chip {
+  min-width: 32px;
+  padding: 6px 8px;
+  border: 1px solid var(--gray-mid);
+  background: transparent;
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.size-chip:hover {
+  border-color: var(--white);
+}
+
+.size-chip.is-selected {
+  background: var(--white);
+  color: var(--black);
+  border-color: var(--white);
+}
+
+.size-chip--soldout {
+  border-color: var(--gray-dark);
+  color: var(--gray-mid);
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.size-chip--soldout:hover {
+  border-color: var(--gray-dark);
+}
+
+.drops-grid__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--gray-text);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 60px 0;
+}
+
+.product-card__btn {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 10px 20px;
+  border: 1px solid var(--white);
+  background: transparent;
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.product-card__btn:hover {
+  background: var(--white);
+  color: var(--black);
+}
+
+/* --- Actions (Pagar ahora + WhatsApp) --- */
+.product-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.product-card__actions .product-card__btn {
+  margin-top: 0;
+  flex: 1;
+  text-align: center;
+  font-family: inherit;
+}
+
+.product-card__btn--pay {
+  background: var(--white);
+  color: var(--black);
+  border-color: var(--white);
+}
+
+.product-card__btn--pay:hover {
+  background: transparent;
+  color: var(--white);
+}
+
+.product-card__btn--pay:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.product-card__btn--pay:disabled:hover {
+  background: var(--white);
+  color: var(--black);
+}
+
+.product-card__pay-msg {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--red);
+}
+
+/* --- Sold Out Cards --- */
+.product-card--soldout .product-card__overlay {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.product-card--soldout .product-card__overlay-text {
+  font-size: 22px;
+  color: var(--red);
+  letter-spacing: 0.1em;
+}
+
+.product-card--soldout .product-card__image-wrap {
+  cursor: default;
+}
+
+/* --- Previous Drops Section --- */
+.drops-previous {
+  padding: 0 32px 100px;
+  max-width: var(--max-content);
+  margin: 0 auto;
+}
+
+.drops-previous__title {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray-text);
+  margin-bottom: 32px;
+  padding-top: 60px;
+  border-top: 1px solid var(--gray-dark);
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+
+@media (max-width: 900px) {
+  .drops-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 40px 20px 80px;
+  }
+
+  .drops-header {
+    padding: 100px 20px 40px;
+  }
+
+  .drops-previous {
+    padding: 0 20px 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .drops-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .drops-header__title {
+    font-size: clamp(56px, 18vw, 90px);
+  }
+}

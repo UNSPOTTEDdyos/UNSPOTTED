@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UNSPOTTED — Admin</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" href="assets/UNSPOTTEDg.png" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      overflow-x: auto;
+    }
+
+    .admin-page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 100px;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .admin-header h1 {
+      font-family: var(--font-display);
+      font-size: 36px;
+      letter-spacing: 0.03em;
+    }
+
+    /* --- Login --- */
+    .login-card {
+      max-width: 360px;
+      margin: 120px auto;
+      padding: 40px 32px;
+      border: 1px solid var(--gray-dark);
+    }
+
+    .login-card h1 {
+      font-family: var(--font-display);
+      font-size: 32px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-text);
+      margin-bottom: 6px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--gray-dark);
+      border: 1px solid var(--gray-mid);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 14px;
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: var(--white);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 24px;
+      border: 1px solid var(--white);
+      background: var(--white);
+      color: var(--black);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity var(--transition);
+    }
+
+    .btn:hover {
+      opacity: 0.8;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--white);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--red);
+      border-color: var(--red);
+    }
+
+    .form-msg {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--red);
+    }
+
+    .form-msg.is-ok {
+      color: var(--white);
+    }
+
+    /* --- Add product form --- */
+    .add-product {
+      border: 1px solid var(--gray-dark);
+      padding: 24px;
+      margin-bottom: 48px;
+    }
+
+    .add-product h2 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      margin-bottom: 20px;
+      letter-spacing: 0.03em;
+    }
+
+    .add-product__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .add-product__sizes {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    /* --- Products table --- */
+    .products-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .products-table th {
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-text);
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--gray-dark);
+    }
+
+    .products-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--gray-dark);
+      vertical-align: middle;
+    }
+
+    .products-table img {
+      width: 48px;
+      height: 64px;
+      object-fit: cover;
+    }
+
+    .products-table input[type="text"],
+    .products-table input[type="number"] {
+      width: 100%;
+      min-width: 60px;
+      padding: 6px 8px;
+      background: var(--gray-dark);
+      border: 1px solid var(--gray-mid);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 13px;
+    }
+
+    .products-table input[type="number"] {
+      width: 56px;
+    }
+
+    .products-table .col-actions {
+      white-space: nowrap;
+      display: flex;
+      gap: 8px;
+    }
+
+    .row-msg {
+      font-size: 11px;
+      color: var(--gray-text);
+      margin-left: 8px;
+    }
+
+    .row-msg.is-ok {
+      color: var(--white);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN VIEW -->
+  <div id="login-view" class="login-card">
+    <h1>UNSPOTTED</h1>
+    <form id="login-form">
+      <div class="field">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" required autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="login-password">Contraseña</label>
+        <input type="password" id="login-password" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn" style="width:100%;">Entrar</button>
+      <p id="login-msg" class="form-msg"></p>
+    </form>
+  </div>
+
+  <!-- DASHBOARD VIEW -->
+  <div id="dashboard-view" class="admin-page hidden">
+    <div class="admin-header">
+      <h1>Productos</h1>
+      <button id="logout-btn" class="btn btn-secondary">Cerrar sesión</button>
+    </div>
+
+    <!-- ADD PRODUCT -->
+    <div class="add-product">
+      <h2>Agregar producto</h2>
+      <form id="add-product-form">
+        <div class="add-product__grid">
+          <div class="field">
+            <label for="new-name">Nombre</label>
+            <input type="text" id="new-name" required />
+          </div>
+          <div class="field">
+            <label for="new-price">Precio (MXN)</label>
+            <input type="number" id="new-price" min="0" step="1" required />
+          </div>
+          <div class="field">
+            <label for="new-order">Orden</label>
+            <input type="number" id="new-order" min="0" step="1" value="0" />
+          </div>
+          <div class="field">
+            <label for="new-image-front">Foto frontal</label>
+            <input type="file" id="new-image-front" accept="image/*" required />
+          </div>
+          <div class="field">
+            <label for="new-image-back">Foto trasera (opcional)</label>
+            <input type="file" id="new-image-back" accept="image/*" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Stock inicial por talla</label>
+          <div class="add-product__sizes">
+            <input type="number" id="new-size-s" placeholder="S" min="0" step="1" value="0" />
+            <input type="number" id="new-size-m" placeholder="M" min="0" step="1" value="0" />
+            <input type="number" id="new-size-l" placeholder="L" min="0" step="1" value="0" />
+            <input type="number" id="new-size-xl" placeholder="XL" min="0" step="1" value="0" />
+          </div>
+        </div>
+        <button type="submit" class="btn" style="margin-top: 12px;">Agregar producto</button>
+        <p id="add-product-msg" class="form-msg"></p>
+      </form>
+    </div>
+
+    <!-- PRODUCTS TABLE -->
+    <table class="products-table">
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>Nombre</th>
+          <th>Precio</th>
+          <th>S</th>
+          <th>M</th>
+          <th>L</th>
+          <th>XL</th>
+          <th>Activo</th>
+          <th>Orden</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="products-tbody"></tbody>
+    </table>
+    <p id="products-empty" class="form-msg hidden">No hay productos todavía.</p>
+
+    <!-- ORDERS TABLE -->
+    <div class="admin-header" style="margin-top: 64px;">
+      <h1>Pedidos</h1>
+    </div>
+    <table class="products-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Producto</th>
+          <th>Talla</th>
+          <th>Precio</th>
+          <th>Cliente</th>
+          <th>Teléfono</th>
+          <th>Dirección</th>
+          <th>Estado</th>
+          <th>Guía de envío</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="orders-tbody"></tbody>
+    </table>
+    <p id="orders-empty" class="form-msg hidden">No hay pedidos todavía.</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
