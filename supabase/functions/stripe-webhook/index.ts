@@ -50,15 +50,26 @@ Deno.serve(async (req) => {
       return new Response('ok', { status: 200 });
     }
 
+    // shipping_details es lo normal cuando se activa shipping_address_collection,
+    // pero si Stripe no la adjunta ahí (pasa en algunos checkouts), caemos a la
+    // dirección del customer_details como respaldo.
     const shipping = session.shipping_details;
-    const address = shipping?.address;
+    const address = shipping?.address ?? session.customer_details?.address ?? null;
     const shippingAddress = address
       ? [address.line1, address.line2, address.city, address.state, address.postal_code, address.country]
           .filter(Boolean)
           .join(', ')
       : null;
 
-    await supabase
+    console.log('checkout.session.completed', {
+      orderId,
+      hasShippingDetails: !!session.shipping_details,
+      hasShippingAddress: !!session.shipping_details?.address,
+      hasCustomerAddress: !!session.customer_details?.address,
+      resolvedShippingAddress: shippingAddress,
+    });
+
+    const { error: updateError } = await supabase
       .from('orders')
       .update({
         status: 'paid',
@@ -67,6 +78,10 @@ Deno.serve(async (req) => {
         shipping_address: shippingAddress,
       })
       .eq('id', orderId);
+
+    if (updateError) {
+      console.error('Error al actualizar la orden', orderId, updateError);
+    }
 
     const { data: product } = await supabase
       .from('products')
