@@ -7,6 +7,10 @@ const orderModalImg = document.getElementById('order-modal-img');
 const orderModalName = document.getElementById('order-modal-name');
 const orderModalPrice = document.getElementById('order-modal-price');
 const orderModalSizes = document.getElementById('order-modal-sizes');
+const orderModalQtyMinus = document.getElementById('order-modal-qty-minus');
+const orderModalQtyPlus = document.getElementById('order-modal-qty-plus');
+const orderModalQtyValue = document.getElementById('order-modal-qty-value');
+const orderModalQtyStock = document.getElementById('order-modal-qty-stock');
 const orderModalDiscount = document.getElementById('order-modal-discount');
 const orderModalSubmit = document.getElementById('order-modal-submit');
 const orderModalMsg = document.getElementById('order-modal-msg');
@@ -15,12 +19,23 @@ const orderModalBackdrop = document.getElementById('order-modal-backdrop');
 
 let currentProduct = null;
 let selectedSize = null;
+let selectedQty = 1;
+let maxQty = 0;
+
+function updateQtyControls() {
+  orderModalQtyValue.textContent = String(selectedQty);
+  orderModalQtyMinus.disabled = !selectedSize || selectedQty <= 1;
+  orderModalQtyPlus.disabled = !selectedSize || selectedQty >= maxQty;
+  orderModalQtyStock.textContent = selectedSize ? `${maxQty} disponibles en talla ${selectedSize}` : '';
+}
 
 function openOrderModal(product) {
   if (!orderModal || !product) return;
 
   currentProduct = product;
   selectedSize = null;
+  selectedQty = 1;
+  maxQty = 0;
 
   orderModalImg.src = product.image_front;
   orderModalImg.alt = product.name;
@@ -30,6 +45,7 @@ function openOrderModal(product) {
   orderModalMsg.textContent = '';
   orderModalSubmit.disabled = true;
   orderModalSubmit.textContent = 'Pagar ahora →';
+  updateQtyControls();
 
   const sizes = product.sizes || {};
   orderModalSizes.innerHTML = SIZE_ORDER.map((size) => {
@@ -69,7 +85,26 @@ if (orderModalSizes) {
     orderModalSizes.querySelectorAll('.size-chip').forEach((c) => c.classList.remove('is-selected'));
     chip.classList.add('is-selected');
     selectedSize = chip.dataset.size;
+    maxQty = Number((currentProduct.sizes || {})[selectedSize] || 0);
+    selectedQty = 1;
+    updateQtyControls();
     orderModalSubmit.disabled = false;
+  });
+}
+
+if (orderModalQtyMinus) {
+  orderModalQtyMinus.addEventListener('click', () => {
+    if (selectedQty <= 1) return;
+    selectedQty -= 1;
+    updateQtyControls();
+  });
+}
+
+if (orderModalQtyPlus) {
+  orderModalQtyPlus.addEventListener('click', () => {
+    if (selectedQty >= maxQty) return;
+    selectedQty += 1;
+    updateQtyControls();
   });
 }
 
@@ -96,6 +131,7 @@ if (orderModalSubmit) {
         body: {
           product_id: currentProduct.id,
           size: selectedSize,
+          quantity: selectedQty,
           discount_code: discountCode || undefined,
         },
       });

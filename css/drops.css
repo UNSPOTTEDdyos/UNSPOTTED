@@ -394,6 +394,51 @@
   text-align: center;
 }
 
+/* --- Quantity Stepper --- */
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: fit-content;
+  border: 1px solid var(--gray-mid);
+}
+
+.qty-stepper__btn {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  color: var(--white);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.qty-stepper__btn:hover:not(:disabled) {
+  background: var(--white);
+  color: var(--black);
+}
+
+.qty-stepper__btn:disabled {
+  color: var(--gray-mid);
+  cursor: not-allowed;
+}
+
+.qty-stepper__value {
+  min-width: 40px;
+  text-align: center;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: var(--white);
+}
+
+.qty-stepper__stock {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--gray-text);
+}
+
 /* =============================================
    RESPONSIVE
    ============================================= */

@@ -67,6 +67,15 @@
         <div class="size-chips" id="order-modal-sizes"></div>
       </div>
       <div class="order-modal__field">
+        <label class="order-modal__label">Cantidad</label>
+        <div class="qty-stepper">
+          <button type="button" class="qty-stepper__btn" id="order-modal-qty-minus" aria-label="Quitar uno" disabled>−</button>
+          <span class="qty-stepper__value" id="order-modal-qty-value">1</span>
+          <button type="button" class="qty-stepper__btn" id="order-modal-qty-plus" aria-label="Agregar uno" disabled>+</button>
+        </div>
+        <p class="qty-stepper__stock" id="order-modal-qty-stock"></p>
+      </div>
+      <div class="order-modal__field">
         <label class="order-modal__label" for="order-modal-discount">Código de descuento (opcional)</label>
         <input type="text" id="order-modal-discount" class="order-modal__input" placeholder="CÓDIGO" autocomplete="off" />
       </div>

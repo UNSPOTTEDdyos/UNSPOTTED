@@ -32,11 +32,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { product_id, size, discount_code } = await req.json();
+    const { product_id, size, discount_code, quantity: rawQuantity } = await req.json();
 
     if (!product_id || !size) {
       return jsonResponse({ error: 'Faltan datos (product_id, size).' }, 400);
     }
+
+    let quantity = Number.isInteger(Number(rawQuantity)) ? Number(rawQuantity) : 1;
+    if (quantity < 1) quantity = 1;
 
     const { data: product, error: productError } = await supabase
       .from('products')
@@ -52,6 +55,9 @@ Deno.serve(async (req) => {
     const stock = Number(product.sizes?.[size] ?? 0);
     if (stock <= 0) {
       return jsonResponse({ error: 'Esa talla está agotada.' }, 400);
+    }
+    if (quantity > stock) {
+      return jsonResponse({ error: `Solo quedan ${stock} piezas de esa talla.` }, 400);
     }
 
     // El código de descuento nunca se confía tal cual del cliente: se relee
@@ -118,7 +124,7 @@ Deno.serve(async (req) => {
             product_data: { name: productName },
             unit_amount: Math.round(finalPrice * 100),
           },
-          quantity: 1,
+          quantity,
         },
       ],
       shipping_address_collection: { allowed_countries: ['MX'] },
@@ -129,9 +135,10 @@ Deno.serve(async (req) => {
         product_id: product.id,
         product_name: product.name,
         size,
-        price: String(finalPrice),
+        quantity: String(quantity),
+        price: String(Math.round(finalPrice * quantity * 100) / 100),
         discount_code: appliedCode ?? '',
-        discount_amount: String(discountAmount),
+        discount_amount: String(Math.round(discountAmount * quantity * 100) / 100),
       },
     });
 

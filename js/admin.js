@@ -266,6 +266,7 @@ function renderOrderRow(order) {
     <td>${date}</td>
     <td>${escapeHtml(order.product_name)}</td>
     <td>${escapeHtml(order.size)}</td>
+    <td>${order.quantity ?? 1}</td>
     <td>$${Number(order.price).toLocaleString('es-MX')}</td>
     <td>${escapeHtml(order.customer_name) || '—'}</td>
     <td>${escapeHtml(order.customer_phone) || '—'}</td>

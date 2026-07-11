@@ -73,10 +73,13 @@ Deno.serve(async (req) => {
       resolvedShippingAddress: shippingAddress,
     });
 
+    const quantity = Math.max(1, Number(meta.quantity || 1));
+
     const { error: insertError } = await supabase.from('orders').insert({
       product_id: meta.product_id,
       product_name: meta.product_name,
       size: meta.size,
+      quantity,
       price: Number(meta.price),
       status: 'paid',
       stripe_session_id: session.id,
@@ -118,7 +121,7 @@ Deno.serve(async (req) => {
     if (product) {
       const sizes = { ...product.sizes };
       const current = Number(sizes[meta.size] ?? 0);
-      sizes[meta.size] = Math.max(0, current - 1);
+      sizes[meta.size] = Math.max(0, current - quantity);
 
       await supabase.from('products').update({ sizes }).eq('id', meta.product_id);
     }
