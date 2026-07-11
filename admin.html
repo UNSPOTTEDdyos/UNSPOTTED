@@ -317,6 +317,61 @@
       <tbody id="orders-tbody"></tbody>
     </table>
     <p id="orders-empty" class="form-msg hidden">No hay pedidos todavía.</p>
+
+    <!-- DISCOUNT CODES -->
+    <div class="admin-header" style="margin-top: 64px;">
+      <h1>Códigos de descuento</h1>
+    </div>
+
+    <div class="add-product">
+      <h2>Crear código</h2>
+      <form id="add-discount-form">
+        <div class="add-product__grid">
+          <div class="field">
+            <label for="new-discount-code">Código</label>
+            <input type="text" id="new-discount-code" placeholder="VERANO10" required />
+          </div>
+          <div class="field">
+            <label for="new-discount-type">Tipo</label>
+            <select id="new-discount-type">
+              <option value="percent">Porcentaje (%)</option>
+              <option value="fixed">Monto fijo (MXN)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="new-discount-value">Valor</label>
+            <input type="number" id="new-discount-value" min="0" step="1" required />
+          </div>
+          <div class="field">
+            <label for="new-discount-max-uses">Usos máximos (opcional)</label>
+            <input type="number" id="new-discount-max-uses" min="1" step="1" />
+          </div>
+          <div class="field">
+            <label for="new-discount-expires">Vence (opcional)</label>
+            <input type="date" id="new-discount-expires" />
+          </div>
+        </div>
+        <button type="submit" class="btn" style="margin-top: 12px;">Crear código</button>
+        <p id="add-discount-msg" class="form-msg"></p>
+      </form>
+    </div>
+
+    <table class="products-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Tipo</th>
+          <th>Valor</th>
+          <th>Usos</th>
+          <th>Máx.</th>
+          <th>Vence</th>
+          <th>Activo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="discounts-tbody"></tbody>
+    </table>
+    <p id="discounts-empty" class="form-msg hidden">No hay códigos todavía.</p>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>

@@ -13,12 +13,17 @@ const productsTbody = document.getElementById('products-tbody');
 const productsEmpty = document.getElementById('products-empty');
 const ordersTbody = document.getElementById('orders-tbody');
 const ordersEmpty = document.getElementById('orders-empty');
+const addDiscountForm = document.getElementById('add-discount-form');
+const addDiscountMsg = document.getElementById('add-discount-msg');
+const discountsTbody = document.getElementById('discounts-tbody');
+const discountsEmpty = document.getElementById('discounts-empty');
 
 function showDashboard() {
   loginView.classList.add('hidden');
   dashboardView.classList.remove('hidden');
   loadProducts();
   loadOrders();
+  loadDiscounts();
 }
 
 function showLogin() {
@@ -348,5 +353,127 @@ async function markOrderShipped(id, tr) {
 
   loadOrders();
 }
+
+/* --- Códigos de descuento --- */
+async function loadDiscounts() {
+  const { data, error } = await supabaseClient
+    .from('discount_codes')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error al cargar códigos de descuento:', error);
+    return;
+  }
+
+  discountsTbody.innerHTML = '';
+  discountsEmpty.classList.toggle('hidden', data.length > 0);
+
+  data.forEach((discount) => discountsTbody.appendChild(renderDiscountRow(discount)));
+}
+
+function renderDiscountRow(discount) {
+  const tr = document.createElement('tr');
+  const expires = discount.expires_at ? new Date(discount.expires_at).toLocaleDateString('es-MX') : '—';
+  const valueLabel = discount.type === 'percent' ? `${Number(discount.value)}%` : `$${Number(discount.value).toLocaleString('es-MX')}`;
+
+  tr.innerHTML = `
+    <td>${escapeHtml(discount.code)}</td>
+    <td>${discount.type === 'percent' ? 'Porcentaje' : 'Monto fijo'}</td>
+    <td>${valueLabel}</td>
+    <td>${discount.used_count}</td>
+    <td>${discount.max_uses ?? '—'}</td>
+    <td>${expires}</td>
+    <td><input type="checkbox" class="f-active" ${discount.active ? 'checked' : ''} /></td>
+    <td class="col-actions">
+      <button type="button" class="btn btn-secondary btn-save">Guardar</button>
+      <button type="button" class="btn btn-danger btn-delete">Eliminar</button>
+      <span class="row-msg"></span>
+    </td>
+  `;
+
+  tr.querySelector('.btn-save').addEventListener('click', () => saveDiscount(tr, discount.id));
+  tr.querySelector('.btn-delete').addEventListener('click', () => deleteDiscount(tr, discount.id));
+
+  return tr;
+}
+
+async function saveDiscount(tr, id) {
+  const rowMsg = tr.querySelector('.row-msg');
+  rowMsg.textContent = 'Guardando…';
+  rowMsg.classList.remove('is-ok');
+
+  const active = tr.querySelector('.f-active').checked;
+  const { error } = await supabaseClient.from('discount_codes').update({ active }).eq('id', id);
+
+  if (error) {
+    rowMsg.textContent = 'Error al guardar';
+    console.error(error);
+    return;
+  }
+
+  rowMsg.textContent = 'Guardado ✓';
+  rowMsg.classList.add('is-ok');
+  setTimeout(() => { rowMsg.textContent = ''; }, 2000);
+}
+
+async function deleteDiscount(tr, id) {
+  if (!confirm('¿Eliminar este código de descuento? Esta acción no se puede deshacer.')) return;
+
+  const { error } = await supabaseClient.from('discount_codes').delete().eq('id', id);
+
+  if (error) {
+    alert('Error al eliminar el código.');
+    console.error(error);
+    return;
+  }
+
+  tr.remove();
+  discountsEmpty.classList.toggle('hidden', discountsTbody.children.length > 0);
+}
+
+addDiscountForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  addDiscountMsg.textContent = '';
+  addDiscountMsg.classList.remove('is-ok');
+
+  const submitBtn = addDiscountForm.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+
+  try {
+    const code = document.getElementById('new-discount-code').value.trim().toUpperCase();
+    const type = document.getElementById('new-discount-type').value;
+    const value = Number(document.getElementById('new-discount-value').value);
+    const maxUsesRaw = document.getElementById('new-discount-max-uses').value;
+    const expiresRaw = document.getElementById('new-discount-expires').value;
+
+    if (!code || !value) {
+      addDiscountMsg.textContent = 'Código y valor son obligatorios.';
+      submitBtn.disabled = false;
+      return;
+    }
+
+    const { error } = await supabaseClient.from('discount_codes').insert({
+      code,
+      type,
+      value,
+      max_uses: maxUsesRaw ? Number(maxUsesRaw) : null,
+      expires_at: expiresRaw ? new Date(expiresRaw).toISOString() : null,
+      active: true,
+    });
+
+    if (error) throw error;
+
+    addDiscountMsg.textContent = 'Código creado ✓';
+    addDiscountMsg.classList.add('is-ok');
+    addDiscountForm.reset();
+    loadDiscounts();
+  } catch (err) {
+    console.error(err);
+    addDiscountMsg.textContent = err.code === '23505' ? 'Ese código ya existe.' : 'Error al crear el código.';
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
 
 checkSession();

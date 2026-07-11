@@ -50,6 +50,31 @@
   <!-- ACTIVE DROP GRID (cargado dinámicamente desde Supabase — ver js/products.js) -->
   <section class="drops-grid" id="drops-grid"></section>
 
+  <!-- ORDER MODAL: talla + código de descuento (ver js/checkout.js) -->
+  <div class="order-modal" id="order-modal" aria-hidden="true">
+    <div class="order-modal__backdrop" id="order-modal-backdrop"></div>
+    <div class="order-modal__panel" role="dialog" aria-modal="true" aria-labelledby="order-modal-name">
+      <button type="button" class="order-modal__close" id="order-modal-close" aria-label="Cerrar">&times;</button>
+      <div class="order-modal__product">
+        <img class="order-modal__img" id="order-modal-img" src="" alt="" />
+        <div>
+          <p class="order-modal__name" id="order-modal-name"></p>
+          <p class="order-modal__price" id="order-modal-price"></p>
+        </div>
+      </div>
+      <div class="order-modal__field">
+        <label class="order-modal__label">Talla</label>
+        <div class="size-chips" id="order-modal-sizes"></div>
+      </div>
+      <div class="order-modal__field">
+        <label class="order-modal__label" for="order-modal-discount">Código de descuento (opcional)</label>
+        <input type="text" id="order-modal-discount" class="order-modal__input" placeholder="CÓDIGO" autocomplete="off" />
+      </div>
+      <button type="button" class="product-card__btn product-card__btn--pay" id="order-modal-submit" disabled>Pagar ahora →</button>
+      <p class="product-card__pay-msg" id="order-modal-msg"></p>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer class="footer">
     <span class="footer__copy">© UNSPOTTED</span>

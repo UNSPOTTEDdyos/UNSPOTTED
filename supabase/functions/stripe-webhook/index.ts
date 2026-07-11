@@ -83,11 +83,30 @@ Deno.serve(async (req) => {
       customer_name: shipping?.name ?? session.customer_details?.name ?? null,
       customer_phone: session.customer_details?.phone ?? null,
       shipping_address: shippingAddress,
+      discount_code: meta.discount_code || null,
+      discount_amount: Number(meta.discount_amount || 0),
     });
 
     if (insertError) {
       console.error('Error al crear el pedido', session.id, insertError);
       return new Response('error', { status: 500 });
+    }
+
+    // El uso del código se acredita aquí (no al crear el checkout) para que
+    // abrir el checkout y no pagar no consuma un uso del código.
+    if (meta.discount_code) {
+      const { data: discount } = await supabase
+        .from('discount_codes')
+        .select('id, used_count')
+        .eq('code', meta.discount_code)
+        .maybeSingle();
+
+      if (discount) {
+        await supabase
+          .from('discount_codes')
+          .update({ used_count: Number(discount.used_count) + 1 })
+          .eq('id', discount.id);
+      }
     }
 
     const { data: product } = await supabase

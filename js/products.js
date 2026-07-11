@@ -5,6 +5,10 @@
 
 const SIZE_ORDER = ['S', 'M', 'L', 'XL'];
 
+// Productos activos, indexados por id — lo usa js/checkout.js para poblar
+// el modal de pedido sin tener que volver a pedirlos a Supabase.
+let productsById = {};
+
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
@@ -39,16 +43,8 @@ function renderProductCard(product) {
   const article = document.createElement('article');
   article.className = 'product-card fade-in';
 
-  const sizes = product.sizes || {};
-
-  const sizeChipsHtml = SIZE_ORDER.map((size) => {
-    const stock = Number(sizes[size] || 0);
-    const soldOut = stock <= 0;
-    return `<button type="button" class="size-chip${soldOut ? ' size-chip--soldout' : ''}" data-size="${size}" ${soldOut ? 'disabled' : ''}>${size}</button>`;
-  }).join('');
-
   article.innerHTML = `
-    <div class="product-card__image-wrap">
+    <div class="product-card__image-wrap" data-product-id="${product.id}">
       <img class="product-card__img product-card__img--front" src="${product.image_front}" alt="${escapeHtml(product.name)}" loading="lazy" />
       ${product.image_back ? `<img class="product-card__img product-card__img--back" src="${product.image_back}" alt="${escapeHtml(product.name)}" loading="lazy" />` : ''}
       <div class="product-card__overlay">
@@ -58,25 +54,8 @@ function renderProductCard(product) {
     <div class="product-card__info">
       <p class="product-card__name">${escapeHtml(product.name)}</p>
       <p class="product-card__price">${formatPrice(product.price)}</p>
-      <div class="size-chips">${sizeChipsHtml}</div>
-      <div class="product-card__actions">
-        <button type="button" class="product-card__btn product-card__btn--pay" data-product-id="${product.id}" disabled>Pagar ahora →</button>
-      </div>
-      <p class="product-card__pay-msg"></p>
     </div>
   `;
-
-  const payBtn = article.querySelector('.product-card__btn--pay');
-  const chips = article.querySelectorAll('.size-chip:not(.size-chip--soldout)');
-
-  chips.forEach((chip) => {
-    chip.addEventListener('click', () => {
-      chips.forEach((c) => c.classList.remove('is-selected'));
-      chip.classList.add('is-selected');
-      payBtn.disabled = false;
-      payBtn.dataset.size = chip.dataset.size;
-    });
-  });
 
   return article;
 }
@@ -124,6 +103,8 @@ async function initDropsGrid() {
     grid.innerHTML = '<p class="drops-grid__empty">Próximamente nuevos productos.</p>';
     return;
   }
+
+  products.forEach((product) => { productsById[product.id] = product; });
 
   grid.innerHTML = '';
   const cards = products.map((product) => renderProductCard(product));
