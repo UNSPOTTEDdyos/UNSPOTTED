@@ -290,7 +290,29 @@ function renderOrderRow(order) {
     actionsCell.appendChild(shipBtn);
   }
 
+  const deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'btn btn-danger';
+  deleteBtn.textContent = 'Eliminar';
+  deleteBtn.addEventListener('click', () => deleteOrder(order.id, tr));
+  actionsCell.appendChild(deleteBtn);
+
   return tr;
+}
+
+async function deleteOrder(id, tr) {
+  if (!confirm('¿Eliminar este pedido? Esta acción no se puede deshacer.')) return;
+
+  const { error } = await supabaseClient.from('orders').delete().eq('id', id);
+
+  if (error) {
+    alert('Error al eliminar el pedido.');
+    console.error(error);
+    return;
+  }
+
+  tr.remove();
+  ordersEmpty.classList.toggle('hidden', ordersTbody.children.length > 0);
 }
 
 async function saveTrackingNumber(id, tr) {
