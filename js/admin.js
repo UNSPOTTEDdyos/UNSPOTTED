@@ -280,10 +280,25 @@ async function loadOrders() {
     return;
   }
 
-  ordersTbody.innerHTML = '';
-  ordersEmpty.classList.toggle('hidden', data.length > 0);
+  // Un checkout puede generar varias filas en `orders` (una por producto del
+  // carrito) que comparten el mismo stripe_session_id — se agrupan aquí para
+  // mostrar un solo renglón por pedido, con todos sus productos adentro.
+  const groups = groupOrdersBySession(data);
 
-  data.forEach((order) => ordersTbody.appendChild(renderOrderRow(order)));
+  ordersTbody.innerHTML = '';
+  ordersEmpty.classList.toggle('hidden', groups.length > 0);
+
+  groups.forEach((group) => ordersTbody.appendChild(renderOrderGroup(group)));
+}
+
+function groupOrdersBySession(rows) {
+  const map = new Map();
+  rows.forEach((row) => {
+    const key = row.stripe_session_id || row.id;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(row);
+  });
+  return Array.from(map.values());
 }
 
 function escapeHtml(str) {
@@ -292,30 +307,36 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-function renderOrderRow(order) {
+function renderOrderGroup(rows) {
   const tr = document.createElement('tr');
-  const date = new Date(order.created_at).toLocaleDateString('es-MX');
-  const statusLabel = ORDER_STATUS_LABEL[order.status] || order.status;
+  const first = rows[0];
+  const date = new Date(first.created_at).toLocaleDateString('es-MX');
+  const statusLabel = ORDER_STATUS_LABEL[first.status] || first.status;
 
   // customer_name / customer_phone / shipping_address vienen de lo que el
   // cliente escribió en Stripe Checkout — no son datos de confianza, se escapan.
-  const canShip = order.status === 'paid' || order.status === 'shipped';
+  const canShip = first.status === 'paid' || first.status === 'shipped';
+
+  const totalQty = rows.reduce((sum, r) => sum + (r.quantity ?? 1), 0);
+  const totalPrice = rows.reduce((sum, r) => sum + Number(r.price), 0);
+
+  const productsHtml = rows
+    .map((r) => `${escapeHtml(r.product_name)} — ${escapeHtml(r.size)} — ${escapeHtml(r.fit) || '—'} × ${r.quantity ?? 1}`)
+    .join('<br />');
 
   tr.innerHTML = `
     <td>${date}</td>
-    <td>${escapeHtml(order.product_name)}</td>
-    <td>${escapeHtml(order.size)}</td>
-    <td>${escapeHtml(order.fit) || '—'}</td>
-    <td>${order.quantity ?? 1}</td>
-    <td>$${Number(order.price).toLocaleString('es-MX')}</td>
-    <td>${escapeHtml(order.customer_name) || '—'}</td>
-    <td>${escapeHtml(order.customer_phone) || '—'}</td>
-    <td>${escapeHtml(order.shipping_address) || '—'}</td>
+    <td class="col-products">${productsHtml}</td>
+    <td>$${totalPrice.toLocaleString('es-MX')}<br /><span class="row-hint">${totalQty} pza${totalQty === 1 ? '' : 's'}</span></td>
+    <td>${escapeHtml(first.customer_name) || '—'}</td>
+    <td>${escapeHtml(first.customer_phone) || '—'}</td>
+    <td>${escapeHtml(first.shipping_address) || '—'}</td>
     <td>${statusLabel}</td>
-    <td>${canShip ? `<input type="text" class="f-tracking" placeholder="Número de guía" value="${escapeHtml(order.tracking_number)}" />` : '—'}</td>
+    <td>${canShip ? `<input type="text" class="f-tracking" placeholder="Número de guía" value="${escapeHtml(first.tracking_number)}" />` : '—'}</td>
     <td class="col-actions"></td>
   `;
 
+  const ids = rows.map((r) => r.id);
   const actionsCell = tr.querySelector('.col-actions');
 
   if (canShip) {
@@ -323,16 +344,16 @@ function renderOrderRow(order) {
     saveBtn.type = 'button';
     saveBtn.className = 'btn btn-secondary';
     saveBtn.textContent = 'Guardar guía';
-    saveBtn.addEventListener('click', () => saveTrackingNumber(order.id, tr));
+    saveBtn.addEventListener('click', () => saveTrackingNumber(ids, tr));
     actionsCell.appendChild(saveBtn);
   }
 
-  if (order.status === 'paid') {
+  if (first.status === 'paid') {
     const shipBtn = document.createElement('button');
     shipBtn.type = 'button';
     shipBtn.className = 'btn btn-secondary';
     shipBtn.textContent = 'Marcar enviado';
-    shipBtn.addEventListener('click', () => markOrderShipped(order.id, tr));
+    shipBtn.addEventListener('click', () => markOrderShipped(ids, tr));
     actionsCell.appendChild(shipBtn);
   }
 
@@ -340,16 +361,16 @@ function renderOrderRow(order) {
   deleteBtn.type = 'button';
   deleteBtn.className = 'btn btn-danger';
   deleteBtn.textContent = 'Eliminar';
-  deleteBtn.addEventListener('click', () => deleteOrder(order.id, tr));
+  deleteBtn.addEventListener('click', () => deleteOrder(ids, tr));
   actionsCell.appendChild(deleteBtn);
 
   return tr;
 }
 
-async function deleteOrder(id, tr) {
+async function deleteOrder(ids, tr) {
   if (!confirm('¿Eliminar este pedido? Esta acción no se puede deshacer.')) return;
 
-  const { error } = await supabaseClient.from('orders').delete().eq('id', id);
+  const { error } = await supabaseClient.from('orders').delete().in('id', ids);
 
   if (error) {
     alert('Error al eliminar el pedido.');
@@ -361,13 +382,13 @@ async function deleteOrder(id, tr) {
   ordersEmpty.classList.toggle('hidden', ordersTbody.children.length > 0);
 }
 
-async function saveTrackingNumber(id, tr) {
+async function saveTrackingNumber(ids, tr) {
   const trackingNumber = tr.querySelector('.f-tracking').value.trim();
 
   const { error } = await supabaseClient
     .from('orders')
     .update({ tracking_number: trackingNumber })
-    .eq('id', id);
+    .in('id', ids);
 
   if (error) {
     alert('Error al guardar la guía.');
@@ -378,13 +399,13 @@ async function saveTrackingNumber(id, tr) {
   loadOrders();
 }
 
-async function markOrderShipped(id, tr) {
+async function markOrderShipped(ids, tr) {
   const trackingNumber = tr.querySelector('.f-tracking')?.value.trim() || null;
 
   const { error } = await supabaseClient
     .from('orders')
     .update({ status: 'shipped', tracking_number: trackingNumber })
-    .eq('id', id);
+    .in('id', ids);
 
   if (error) {
     alert('Error al actualizar el pedido.');

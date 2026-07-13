@@ -1,5 +1,7 @@
 /* =============================================
-   UNSPOTTED — Modal de pedido (talla + descuento) + Pagar ahora (Stripe)
+   UNSPOTTED — Modal de producto (talla + corte + cantidad)
+   Agrega el item al carrito (ver js/cart.js) — el pago se
+   hace desde el carrito, no aquí.
    ============================================= */
 
 const orderModal = document.getElementById('order-modal');
@@ -12,7 +14,6 @@ const orderModalQtyMinus = document.getElementById('order-modal-qty-minus');
 const orderModalQtyPlus = document.getElementById('order-modal-qty-plus');
 const orderModalQtyValue = document.getElementById('order-modal-qty-value');
 const orderModalQtyStock = document.getElementById('order-modal-qty-stock');
-const orderModalDiscount = document.getElementById('order-modal-discount');
 const orderModalSubmit = document.getElementById('order-modal-submit');
 const orderModalMsg = document.getElementById('order-modal-msg');
 const orderModalClose = document.getElementById('order-modal-close');
@@ -48,9 +49,8 @@ function openOrderModal(product) {
   orderModalImg.alt = product.name;
   orderModalName.textContent = product.name;
   orderModalPrice.textContent = formatPrice(product.price);
-  orderModalDiscount.value = '';
   orderModalMsg.textContent = '';
-  orderModalSubmit.textContent = 'Pagar ahora →';
+  orderModalSubmit.textContent = 'Agregar al carrito';
   updateQtyControls();
   updateSubmitState();
 
@@ -64,6 +64,7 @@ function openOrderModal(product) {
   if (orderModalFit) {
     orderModalFit.querySelectorAll('.size-chip').forEach((c) => c.classList.remove('is-selected'));
   }
+  orderModalSizes.querySelectorAll('.size-chip').forEach((c) => c.classList.remove('is-selected'));
 
   orderModal.classList.add('is-open');
   orderModal.setAttribute('aria-hidden', 'false');
@@ -140,46 +141,22 @@ document.addEventListener('keydown', (e) => {
 });
 
 if (orderModalSubmit) {
-  orderModalSubmit.addEventListener('click', async () => {
+  orderModalSubmit.addEventListener('click', () => {
     if (!currentProduct || !selectedSize || !selectedFit) return;
 
+    addToCart({
+      product_id: currentProduct.id,
+      name: currentProduct.name,
+      image: currentProduct.image_front,
+      price: Number(currentProduct.price),
+      size: selectedSize,
+      fit: selectedFit,
+      quantity: selectedQty,
+      maxQty,
+    });
+
     orderModalMsg.textContent = '';
-    orderModalSubmit.disabled = true;
-    const originalText = orderModalSubmit.textContent;
-    orderModalSubmit.textContent = 'Redirigiendo…';
-
-    const discountCode = orderModalDiscount.value.trim();
-
-    try {
-      const { data, error } = await supabaseClient.functions.invoke('create-checkout-session', {
-        body: {
-          product_id: currentProduct.id,
-          size: selectedSize,
-          fit: selectedFit,
-          quantity: selectedQty,
-          discount_code: discountCode || undefined,
-        },
-      });
-
-      if (error || !data?.url) {
-        // Cuando la función responde con un status de error (400/404/500),
-        // supabase-js no mete el body en `data` — hay que leerlo directo de
-        // la respuesta HTTP que trae el propio error para ver el motivo real.
-        let reason = data?.error;
-        if (!reason && error?.context?.json) {
-          try {
-            reason = (await error.context.json())?.error;
-          } catch { /* respuesta sin JSON, se usa el mensaje genérico */ }
-        }
-        throw new Error(reason || 'No se pudo iniciar el pago.');
-      }
-
-      window.location.href = data.url;
-    } catch (err) {
-      console.error(err);
-      orderModalMsg.textContent = err.message || 'Error al iniciar el pago. Intenta de nuevo.';
-      orderModalSubmit.disabled = false;
-      orderModalSubmit.textContent = originalText;
-    }
+    closeOrderModal();
+    openCartDrawer();
   });
 }

@@ -1,5 +1,6 @@
-// UNSPOTTED — recibe la confirmación de pago de Stripe, marca la orden
-// como pagada con los datos de envío, y resta el stock de esa talla.
+// UNSPOTTED — recibe la confirmación de pago de Stripe, crea un pedido por
+// cada línea del carrito (todas comparten stripe_session_id), y resta el
+// stock de cada talla comprada.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14?target=deno';
@@ -13,6 +14,37 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
+
+async function decrementStock(product_id: string, size: string, quantity: number) {
+  const { data: product } = await supabase
+    .from('products')
+    .select('sizes')
+    .eq('id', product_id)
+    .single();
+
+  if (!product) return;
+
+  const sizes = { ...product.sizes };
+  const current = Number(sizes[size] ?? 0);
+  sizes[size] = Math.max(0, current - quantity);
+
+  await supabase.from('products').update({ sizes }).eq('id', product_id);
+}
+
+async function creditDiscountUsage(code: string) {
+  const { data: discount } = await supabase
+    .from('discount_codes')
+    .select('id, used_count')
+    .eq('code', code)
+    .maybeSingle();
+
+  if (discount) {
+    await supabase
+      .from('discount_codes')
+      .update({ used_count: Number(discount.used_count) + 1 })
+      .eq('id', discount.id);
+  }
+}
 
 Deno.serve(async (req) => {
   const signature = req.headers.get('stripe-signature');
@@ -33,11 +65,6 @@ Deno.serve(async (req) => {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
     const meta = session.metadata;
-
-    if (!meta?.product_id || !meta?.size || !meta?.price) {
-      console.error('checkout.session.completed sin metadata de producto', session.id);
-      return new Response('ok', { status: 200 });
-    }
 
     // Stripe puede reenviar el mismo evento más de una vez (reintentos). Si ya
     // existe un pedido con este stripe_session_id, ya lo procesamos antes —
@@ -64,68 +91,105 @@ Deno.serve(async (req) => {
           .join(', ')
       : null;
 
-    console.log('checkout.session.completed', {
-      sessionId: session.id,
-      productId: meta.product_id,
-      size: meta.size,
-      hasShippingAddress: !!session.shipping_details?.address,
-      hasCustomerAddress: !!session.customer_details?.address,
-      resolvedShippingAddress: shippingAddress,
-    });
+    const customer_name = shipping?.name ?? session.customer_details?.name ?? null;
+    const customer_phone = session.customer_details?.phone ?? null;
 
-    const quantity = Math.max(1, Number(meta.quantity || 1));
+    if (!meta?.cart_id) {
+      // Formato viejo (una sesión = un solo producto), por si queda alguna
+      // sesión de Stripe en vuelo creada antes de pasar al carrito.
+      if (!meta?.product_id || !meta?.size || !meta?.price) {
+        console.error('checkout.session.completed sin metadata reconocible', session.id);
+        return new Response('ok', { status: 200 });
+      }
 
-    const { error: insertError } = await supabase.from('orders').insert({
-      product_id: meta.product_id,
-      product_name: meta.product_name,
-      size: meta.size,
-      fit: meta.fit || null,
-      quantity,
-      price: Number(meta.price),
-      status: 'paid',
-      stripe_session_id: session.id,
-      customer_name: shipping?.name ?? session.customer_details?.name ?? null,
-      customer_phone: session.customer_details?.phone ?? null,
-      shipping_address: shippingAddress,
-      discount_code: meta.discount_code || null,
-      discount_amount: Number(meta.discount_amount || 0),
-    });
+      const quantity = Math.max(1, Number(meta.quantity || 1));
 
-    if (insertError) {
-      console.error('Error al crear el pedido', session.id, insertError);
+      const { error: insertError } = await supabase.from('orders').insert({
+        product_id: meta.product_id,
+        product_name: meta.product_name,
+        size: meta.size,
+        fit: meta.fit || null,
+        quantity,
+        price: Number(meta.price),
+        status: 'paid',
+        stripe_session_id: session.id,
+        customer_name,
+        customer_phone,
+        shipping_address: shippingAddress,
+        discount_code: meta.discount_code || null,
+        discount_amount: Number(meta.discount_amount || 0),
+      });
+
+      if (insertError) {
+        console.error('Error al crear el pedido (legacy)', session.id, insertError);
+        return new Response('error', { status: 500 });
+      }
+
+      if (meta.discount_code) await creditDiscountUsage(meta.discount_code);
+      await decrementStock(meta.product_id, meta.size, quantity);
+
+      return new Response('ok', { status: 200 });
+    }
+
+    // --- Carrito multi-producto ---
+    const { data: pendingCart, error: cartError } = await supabase
+      .from('pending_carts')
+      .select('items')
+      .eq('id', meta.cart_id)
+      .maybeSingle();
+
+    if (cartError || !pendingCart) {
+      console.error('No se encontró el carrito pendiente', session.id, meta.cart_id, cartError);
       return new Response('error', { status: 500 });
     }
 
-    // El uso del código se acredita aquí (no al crear el checkout) para que
-    // abrir el checkout y no pagar no consuma un uso del código.
-    if (meta.discount_code) {
-      const { data: discount } = await supabase
-        .from('discount_codes')
-        .select('id, used_count')
-        .eq('code', meta.discount_code)
-        .maybeSingle();
+    const items = pendingCart.items as {
+      product_id: string;
+      product_name: string;
+      size: string;
+      fit: string;
+      quantity: number;
+      unit_price: number;
+    }[];
 
-      if (discount) {
-        await supabase
-          .from('discount_codes')
-          .update({ used_count: Number(discount.used_count) + 1 })
-          .eq('id', discount.id);
-      }
+    const cartTotal = items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
+    const totalDiscount = Number(meta.discount_amount || 0);
+
+    const rows = items.map((item) => {
+      const itemTotal = item.unit_price * item.quantity;
+      const itemDiscount = cartTotal > 0 ? Math.round((itemTotal / cartTotal) * totalDiscount * 100) / 100 : 0;
+
+      return {
+        product_id: item.product_id,
+        product_name: item.product_name,
+        size: item.size,
+        fit: item.fit,
+        quantity: item.quantity,
+        price: Math.round((itemTotal - itemDiscount) * 100) / 100,
+        status: 'paid',
+        stripe_session_id: session.id,
+        customer_name,
+        customer_phone,
+        shipping_address: shippingAddress,
+        discount_code: meta.discount_code || null,
+        discount_amount: itemDiscount,
+      };
+    });
+
+    const { error: insertError } = await supabase.from('orders').insert(rows);
+
+    if (insertError) {
+      console.error('Error al crear los pedidos del carrito', session.id, insertError);
+      return new Response('error', { status: 500 });
     }
 
-    const { data: product } = await supabase
-      .from('products')
-      .select('sizes')
-      .eq('id', meta.product_id)
-      .single();
+    if (meta.discount_code) await creditDiscountUsage(meta.discount_code);
 
-    if (product) {
-      const sizes = { ...product.sizes };
-      const current = Number(sizes[meta.size] ?? 0);
-      sizes[meta.size] = Math.max(0, current - quantity);
-
-      await supabase.from('products').update({ sizes }).eq('id', meta.product_id);
+    for (const item of items) {
+      await decrementStock(item.product_id, item.size, item.quantity);
     }
+
+    await supabase.from('pending_carts').delete().eq('id', meta.cart_id);
   }
 
   return new Response('ok', { status: 200 });
