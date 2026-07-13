@@ -7,6 +7,7 @@ const orderModalImg = document.getElementById('order-modal-img');
 const orderModalName = document.getElementById('order-modal-name');
 const orderModalPrice = document.getElementById('order-modal-price');
 const orderModalSizes = document.getElementById('order-modal-sizes');
+const orderModalFit = document.getElementById('order-modal-fit');
 const orderModalQtyMinus = document.getElementById('order-modal-qty-minus');
 const orderModalQtyPlus = document.getElementById('order-modal-qty-plus');
 const orderModalQtyValue = document.getElementById('order-modal-qty-value');
@@ -19,6 +20,7 @@ const orderModalBackdrop = document.getElementById('order-modal-backdrop');
 
 let currentProduct = null;
 let selectedSize = null;
+let selectedFit = null;
 let selectedQty = 1;
 let maxQty = 0;
 
@@ -29,11 +31,16 @@ function updateQtyControls() {
   orderModalQtyStock.textContent = selectedSize ? `${maxQty} disponibles en talla ${selectedSize}` : '';
 }
 
+function updateSubmitState() {
+  orderModalSubmit.disabled = !(selectedSize && selectedFit);
+}
+
 function openOrderModal(product) {
   if (!orderModal || !product) return;
 
   currentProduct = product;
   selectedSize = null;
+  selectedFit = null;
   selectedQty = 1;
   maxQty = 0;
 
@@ -43,9 +50,9 @@ function openOrderModal(product) {
   orderModalPrice.textContent = formatPrice(product.price);
   orderModalDiscount.value = '';
   orderModalMsg.textContent = '';
-  orderModalSubmit.disabled = true;
   orderModalSubmit.textContent = 'Pagar ahora →';
   updateQtyControls();
+  updateSubmitState();
 
   const sizes = product.sizes || {};
   orderModalSizes.innerHTML = SIZE_ORDER.map((size) => {
@@ -53,6 +60,10 @@ function openOrderModal(product) {
     const soldOut = stock <= 0;
     return `<button type="button" class="size-chip${soldOut ? ' size-chip--soldout' : ''}" data-size="${size}" ${soldOut ? 'disabled' : ''}>${size}</button>`;
   }).join('');
+
+  if (orderModalFit) {
+    orderModalFit.querySelectorAll('.size-chip').forEach((c) => c.classList.remove('is-selected'));
+  }
 
   orderModal.classList.add('is-open');
   orderModal.setAttribute('aria-hidden', 'false');
@@ -66,6 +77,7 @@ function closeOrderModal() {
   document.body.style.overflow = '';
   currentProduct = null;
   selectedSize = null;
+  selectedFit = null;
 }
 
 document.addEventListener('click', (e) => {
@@ -88,7 +100,19 @@ if (orderModalSizes) {
     maxQty = Number((currentProduct.sizes || {})[selectedSize] || 0);
     selectedQty = 1;
     updateQtyControls();
-    orderModalSubmit.disabled = false;
+    updateSubmitState();
+  });
+}
+
+if (orderModalFit) {
+  orderModalFit.addEventListener('click', (e) => {
+    const chip = e.target.closest('.size-chip');
+    if (!chip) return;
+
+    orderModalFit.querySelectorAll('.size-chip').forEach((c) => c.classList.remove('is-selected'));
+    chip.classList.add('is-selected');
+    selectedFit = chip.dataset.fit;
+    updateSubmitState();
   });
 }
 
@@ -117,7 +141,7 @@ document.addEventListener('keydown', (e) => {
 
 if (orderModalSubmit) {
   orderModalSubmit.addEventListener('click', async () => {
-    if (!currentProduct || !selectedSize) return;
+    if (!currentProduct || !selectedSize || !selectedFit) return;
 
     orderModalMsg.textContent = '';
     orderModalSubmit.disabled = true;
@@ -131,6 +155,7 @@ if (orderModalSubmit) {
         body: {
           product_id: currentProduct.id,
           size: selectedSize,
+          fit: selectedFit,
           quantity: selectedQty,
           discount_code: discountCode || undefined,
         },

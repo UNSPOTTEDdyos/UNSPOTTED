@@ -79,6 +79,7 @@ Deno.serve(async (req) => {
       product_id: meta.product_id,
       product_name: meta.product_name,
       size: meta.size,
+      fit: meta.fit || null,
       quantity,
       price: Number(meta.price),
       status: 'paid',

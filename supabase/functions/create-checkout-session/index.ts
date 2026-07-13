@@ -32,10 +32,15 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { product_id, size, discount_code, quantity: rawQuantity } = await req.json();
+    const { product_id, size, fit, discount_code, quantity: rawQuantity } = await req.json();
 
     if (!product_id || !size) {
       return jsonResponse({ error: 'Faltan datos (product_id, size).' }, 400);
+    }
+
+    const VALID_FITS = ['Oversized', 'Cropped'];
+    if (!VALID_FITS.includes(fit)) {
+      return jsonResponse({ error: 'Falta elegir el corte (Oversized o Cropped).' }, 400);
     }
 
     let quantity = Number.isInteger(Number(rawQuantity)) ? Number(rawQuantity) : 1;
@@ -112,8 +117,8 @@ Deno.serve(async (req) => {
     const siteUrl = Deno.env.get('SITE_URL') ?? 'http://localhost:8080';
 
     const productName = appliedCode
-      ? `${product.name} — Talla ${size} (${appliedCode})`
-      : `${product.name} — Talla ${size}`;
+      ? `${product.name} — Talla ${size} — ${fit} (${appliedCode})`
+      : `${product.name} — Talla ${size} — ${fit}`;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -135,6 +140,7 @@ Deno.serve(async (req) => {
         product_id: product.id,
         product_name: product.name,
         size,
+        fit,
         quantity: String(quantity),
         price: String(Math.round(finalPrice * quantity * 100) / 100),
         discount_code: appliedCode ?? '',
