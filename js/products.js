@@ -43,13 +43,23 @@ function renderProductCard(product) {
   const article = document.createElement('article');
   article.className = 'product-card fade-in';
 
+  const images = [product.image_front, product.image_back, product.image_extra].filter(Boolean);
+
+  const imagesHtml = images
+    .map((src, i) => `<img class="product-card__img${i === 0 ? ' is-active' : ''}" data-index="${i}" src="${src}" alt="${escapeHtml(product.name)}" loading="lazy" />`)
+    .join('');
+
+  const dotsHtml = images.length > 1
+    ? `<div class="product-card__dots">${images.map((_, i) => `<button type="button" class="product-card__dot${i === 0 ? ' is-active' : ''}" data-index="${i}" aria-label="Ver foto ${i + 1}"></button>`).join('')}</div>`
+    : '';
+
   article.innerHTML = `
     <div class="product-card__image-wrap" data-product-id="${product.id}">
-      <img class="product-card__img product-card__img--front" src="${product.image_front}" alt="${escapeHtml(product.name)}" loading="lazy" />
-      ${product.image_back ? `<img class="product-card__img product-card__img--back" src="${product.image_back}" alt="${escapeHtml(product.name)}" loading="lazy" />` : ''}
+      ${imagesHtml}
       <div class="product-card__overlay">
         <span class="product-card__overlay-text">PEDIR →</span>
       </div>
+      ${dotsHtml}
     </div>
     <div class="product-card__info">
       <p class="product-card__name">${escapeHtml(product.name)}</p>
@@ -59,6 +69,19 @@ function renderProductCard(product) {
 
   return article;
 }
+
+/* --- Cambiar foto activa al hacer clic en un punto de la galería --- */
+document.addEventListener('click', (e) => {
+  const dot = e.target.closest('.product-card__dot');
+  if (!dot) return;
+  e.stopImmediatePropagation();
+
+  const wrap = dot.closest('.product-card__image-wrap');
+  const index = dot.dataset.index;
+
+  wrap.querySelectorAll('.product-card__dot').forEach((d) => d.classList.toggle('is-active', d.dataset.index === index));
+  wrap.querySelectorAll('.product-card__img').forEach((img) => img.classList.toggle('is-active', img.dataset.index === index));
+});
 
 /* --- Card simple para el preview de la home (index.html) --- */
 function renderPreviewCard(product, delayClass) {

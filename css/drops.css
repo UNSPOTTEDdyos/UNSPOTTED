@@ -57,19 +57,47 @@
   display: block;
 }
 
-/* Front/back photo swap on hover */
-.product-card__img--front,
-.product-card__img--back {
+/* Galería: varias fotos apiladas, se cambia con los puntos de abajo */
+.product-card__img {
   position: absolute;
   inset: 0;
+  opacity: 0;
   transition: opacity var(--transition);
 }
 
-.product-card__img--back {
-  opacity: 0;
+.product-card__img.is-active {
+  opacity: 1;
 }
 
-.product-card__image-wrap:hover .product-card__img--back {
+.product-card__dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+.product-card__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--white);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity var(--transition), background var(--transition);
+}
+
+.product-card__dot:hover {
+  opacity: 1;
+}
+
+.product-card__dot.is-active {
+  background: var(--white);
   opacity: 1;
 }
 

@@ -89,6 +89,12 @@ function renderProductRow(product) {
 
   tr.innerHTML = `
     <td><img src="${product.image_front}" alt="${product.name}" /></td>
+    <td>
+      <div class="f-image-extra">
+        ${product.image_extra ? `<img src="${product.image_extra}" alt="${product.name} puesta en persona" />` : ''}
+        <input type="file" class="f-image-extra-input" accept="image/*" />
+      </div>
+    </td>
     <td><input type="text" class="f-name" value="${product.name.replace(/"/g, '&quot;')}" /></td>
     <td><input type="number" class="f-price" min="0" step="1" value="${product.price}" /></td>
     <td><input type="number" class="f-size-s" min="0" step="1" value="${sizes.S ?? 0}" /></td>
@@ -106,8 +112,38 @@ function renderProductRow(product) {
 
   tr.querySelector('.btn-save').addEventListener('click', () => saveProduct(tr, product.id));
   tr.querySelector('.btn-delete').addEventListener('click', () => deleteProduct(tr, product.id));
+  tr.querySelector('.f-image-extra-input').addEventListener('change', (e) => uploadExtraImage(tr, product.id, e.target.files[0]));
 
   return tr;
+}
+
+async function uploadExtraImage(tr, id, file) {
+  if (!file) return;
+  const rowMsg = tr.querySelector('.row-msg');
+  rowMsg.textContent = 'Subiendo foto…';
+  rowMsg.classList.remove('is-ok');
+
+  try {
+    const imageExtraUrl = await uploadImage(file);
+    const { error } = await supabaseClient.from('products').update({ image_extra: imageExtraUrl }).eq('id', id);
+    if (error) throw error;
+
+    rowMsg.textContent = 'Foto guardada ✓';
+    rowMsg.classList.add('is-ok');
+    setTimeout(() => { rowMsg.textContent = ''; }, 2000);
+
+    const cell = tr.querySelector('.f-image-extra');
+    let img = cell.querySelector('img');
+    if (!img) {
+      img = document.createElement('img');
+      cell.insertBefore(img, cell.firstChild);
+    }
+    img.src = imageExtraUrl;
+    img.alt = 'Puesta en persona';
+  } catch (err) {
+    console.error(err);
+    rowMsg.textContent = 'Error al subir la foto';
+  }
 }
 
 async function saveProduct(tr, id) {
@@ -181,6 +217,7 @@ addProductForm.addEventListener('submit', async (e) => {
     const sortOrder = Number(document.getElementById('new-order').value);
     const frontFile = document.getElementById('new-image-front').files[0];
     const backFile = document.getElementById('new-image-back').files[0];
+    const extraFile = document.getElementById('new-image-extra').files[0];
 
     if (!name || !price || !frontFile) {
       addProductMsg.textContent = 'Nombre, precio y foto frontal son obligatorios.';
@@ -190,6 +227,7 @@ addProductForm.addEventListener('submit', async (e) => {
 
     const imageFrontUrl = await uploadImage(frontFile);
     const imageBackUrl = backFile ? await uploadImage(backFile) : null;
+    const imageExtraUrl = extraFile ? await uploadImage(extraFile) : null;
 
     const sizes = {
       S: Number(document.getElementById('new-size-s').value),
@@ -203,6 +241,7 @@ addProductForm.addEventListener('submit', async (e) => {
       price,
       image_front: imageFrontUrl,
       image_back: imageBackUrl,
+      image_extra: imageExtraUrl,
       sizes,
       active: true,
       sort_order: sortOrder,

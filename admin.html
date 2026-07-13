@@ -188,6 +188,20 @@
       width: 56px;
     }
 
+    .products-table .f-image-extra {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      min-width: 140px;
+    }
+
+    .products-table .f-image-extra input[type="file"] {
+      font-size: 11px;
+      color: var(--gray-text);
+      max-width: 140px;
+    }
+
     .products-table .col-actions {
       white-space: nowrap;
       display: flex;
@@ -260,6 +274,10 @@
             <label for="new-image-back">Foto trasera (opcional)</label>
             <input type="file" id="new-image-back" accept="image/*" />
           </div>
+          <div class="field">
+            <label for="new-image-extra">Foto puesta en persona (opcional)</label>
+            <input type="file" id="new-image-extra" accept="image/*" />
+          </div>
         </div>
         <div class="field">
           <label>Stock inicial por talla</label>
@@ -280,6 +298,7 @@
       <thead>
         <tr>
           <th>Foto</th>
+          <th>Foto en persona</th>
           <th>Nombre</th>
           <th>Precio</th>
           <th>S</th>
