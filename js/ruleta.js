@@ -8,10 +8,10 @@
 const RULETA_CONFIG = {
   prizes: [
     { id: 'sticker', name: 'Sticker UNSPOTTED', weight: 30 },
-    { id: 'pack-stickers', name: 'Pack de stickers', weight: 25 },
-    { id: 'prioridad-tracksuit', name: 'Prioridad en la preventa del tracksuit', weight: 20 },
+    { id: 'pack-stickers', name: 'Gira otra vez', weight: 25 },
+    { id: 'prioridad-tracksuit', name: '2 por 800', weight: 20 },
     { id: 'descuento-tracksuit', name: 'Descuento en la preventa del tracksuit', weight: 15 },
-    { id: 'prioridad-beanie', name: 'Prioridad en la preventa del beanie', weight: 9 },
+    { id: 'prioridad-beanie', name: '10% extra', weight: 9 },
     { id: 'camisa-gratis', name: 'CAMISA GRATIS', weight: 1, isGrandPrize: true },
   ],
 };
