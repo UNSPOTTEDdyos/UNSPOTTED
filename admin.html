@@ -231,6 +231,166 @@
     .hidden {
       display: none !important;
     }
+
+    /* =============================================
+       RULETA DE PREMIOS
+       ============================================= */
+    .ruleta-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .ruleta-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* Rueda: escala con el viewport (mobile-first), siempre cuadrada */
+    .ruleta-wheel-wrap {
+      position: relative;
+      width: min(420px, 88vw);
+      aspect-ratio: 1 / 1;
+      margin: 0 auto;
+    }
+
+    .ruleta-pointer {
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 24px solid var(--white);
+      z-index: 5;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+    }
+
+    .ruleta-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 50%;
+      border: 2px solid var(--white);
+      box-shadow: 0 0 0 1px var(--gray-dark), 0 20px 40px rgba(0, 0, 0, 0.5);
+      touch-action: manipulation;
+    }
+
+    .ruleta-spin-controls {
+      width: min(420px, 88vw);
+      margin-top: 20px;
+    }
+
+    .ruleta-spin-btn {
+      width: 100%;
+      padding: 18px;
+      font-size: 15px;
+      letter-spacing: 0.15em;
+    }
+
+    .ruleta-spin-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .ruleta-admin-controls {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .ruleta-admin-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .ruleta-stats {
+      font-size: 13px;
+      color: var(--gray-text);
+    }
+
+    /* --- Modo pantalla completa: solo rueda + logo, para el cliente --- */
+    .ruleta-fullscreen-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--black);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 24px;
+      touch-action: manipulation;
+    }
+
+    .ruleta-fs-logo {
+      width: 72px;
+      height: auto;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    /* --- Overlay de resultado al terminar un giro --- */
+    .ruleta-reveal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.96);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      gap: 16px;
+    }
+
+    .ruleta-reveal-label {
+      font-size: 13px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gray-text);
+    }
+
+    .ruleta-reveal-prize {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 9vw, 64px);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      max-width: 90vw;
+      color: var(--white);
+    }
+
+    /* Revelación dramática del premio mayor: flash blanco/negro tipo glitch, sin colores de casino */
+    .ruleta-reveal-overlay.is-grand-prize {
+      animation: ruleta-flash 0.6s steps(2, end) 2;
+    }
+
+    .ruleta-reveal-overlay.is-grand-prize .ruleta-reveal-prize {
+      animation: ruleta-glitch 0.6s steps(2, end) 2;
+    }
+
+    @keyframes ruleta-flash {
+      0%, 100% { background: rgba(0, 0, 0, 0.96); }
+      50% { background: rgba(255, 255, 255, 0.96); }
+    }
+
+    @keyframes ruleta-glitch {
+      0% { transform: translate(0, 0); color: var(--white); }
+      25% { transform: translate(-6px, 2px); color: var(--black); }
+      50% { transform: translate(6px, -2px); color: var(--white); }
+      75% { transform: translate(-3px, 0); color: var(--black); }
+      100% { transform: translate(0, 0); color: var(--white); }
+    }
   </style>
 </head>
 <body>
@@ -400,10 +560,71 @@
       <tbody id="discounts-tbody"></tbody>
     </table>
     <p id="discounts-empty" class="form-msg hidden">No hay códigos todavía.</p>
+
+    <!-- RULETA DE PREMIOS -->
+    <div class="admin-header" style="margin-top: 64px;">
+      <h1>Ruleta de premios</h1>
+    </div>
+
+    <div class="ruleta-section">
+      <!-- La rueda y el botón GIRAR viven aquí mientras NO está en modo pantalla completa;
+           ambos se reubican dentro de #ruleta-fullscreen-slot al activar "Pantalla completa". -->
+      <div id="ruleta-normal-slot" class="ruleta-slot">
+        <div id="ruleta-wheel-wrap" class="ruleta-wheel-wrap">
+          <div class="ruleta-pointer"></div>
+          <canvas id="ruleta-canvas" class="ruleta-canvas"></canvas>
+        </div>
+        <div id="ruleta-spin-controls" class="ruleta-spin-controls">
+          <button id="ruleta-spin-btn" type="button" class="btn ruleta-spin-btn">GIRAR</button>
+        </div>
+      </div>
+
+      <!-- Controles de administración (no se muestran en modo pantalla completa) -->
+      <div class="add-product ruleta-admin-controls">
+        <h2>Controles</h2>
+        <div class="ruleta-admin-row">
+          <button id="ruleta-mute-btn" type="button" class="btn btn-secondary">🔊 Sonido activado</button>
+          <button id="ruleta-fullscreen-btn" type="button" class="btn btn-secondary">Pantalla completa</button>
+          <button id="ruleta-reset-btn" type="button" class="btn btn-secondary">Reset del día</button>
+          <span id="ruleta-reset-msg" class="row-msg"></span>
+        </div>
+
+        <p class="ruleta-stats">Giros totales: <strong id="ruleta-spins-count">0</strong></p>
+
+        <h2 style="margin-top: 24px;">Historial de premios</h2>
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>Fecha y hora</th>
+              <th>Premio</th>
+            </tr>
+          </thead>
+          <tbody id="ruleta-log-tbody"></tbody>
+        </table>
+        <p id="ruleta-log-empty" class="form-msg hidden">Todavía no hay giros registrados.</p>
+
+        <button id="ruleta-clear-history-btn" type="button" class="btn btn-danger" style="margin-top: 16px;">Borrar historial</button>
+      </div>
+    </div>
+
+    <!-- MODO PANTALLA COMPLETA: solo rueda + logo, para dejarle el teléfono/tablet al cliente.
+         Se sale con una pulsación larga (2s) sobre el logo, no hay botón visible de salida. -->
+    <div id="ruleta-fullscreen-overlay" class="ruleta-fullscreen-overlay hidden">
+      <img id="ruleta-fs-logo" class="ruleta-fs-logo" src="assets/UNSPOTTEDg.png" alt="UNSPOTTED" />
+      <div id="ruleta-fullscreen-slot" class="ruleta-slot"></div>
+    </div>
+
+    <!-- OVERLAY DE RESULTADO: aparece al terminar cada giro -->
+    <div id="ruleta-reveal-overlay" class="ruleta-reveal-overlay hidden">
+      <p class="ruleta-reveal-label">¡Ganaste!</p>
+      <p id="ruleta-reveal-prize" class="ruleta-reveal-prize"></p>
+      <button id="ruleta-reveal-next-btn" type="button" class="btn">Siguiente</button>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/admin.js"></script>
+  <script src="js/ruleta.js"></script>
 </body>
 </html>
